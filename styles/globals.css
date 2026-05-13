@@ -1,0 +1,25 @@
+@import "tailwindcss";
+
+@theme {
+  --font-display: "Space Grotesk", sans-serif;
+  --font-sans: "Inter", sans-serif;
+  
+  --color-exza-gold: #C5A059;
+  --color-exza-dark: #0A0A0B;
+  --color-exza-slate: #17171A;
+  --color-exza-emerald: #10b981;
+  --color-exza-premium: #D4AF37;
+}
+
+.glass-panel {
+  background: rgba(23, 23, 26, 0.7);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(197, 160, 89, 0.1);
+}
+
+.gold-gradient {
+  background: linear-gradient(135deg, #C5A059 0%, #E2C28A 50%, #C5A059 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
