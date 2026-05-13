@@ -18,6 +18,7 @@ export const AuthModal: React.FC<AuthProps> = ({ isOpen, onClose, onAuthSuccess 
   const [isLogin, setIsLogin] = useState(true);
   const [step, setStep] = useState<'details' | 'otp'>('details');
   const [otp, setOtp] = useState('');
+  const [otpSessionData, setOtpSessionData] = useState<{hash: string, expires: number} | null>(null);
   const [formData, setFormData] = useState({
     username: '',
     email: '',
@@ -88,6 +89,7 @@ export const AuthModal: React.FC<AuthProps> = ({ isOpen, onClose, onAuthSuccess 
 
           const data = await response.json();
           if (response.ok) {
+            setOtpSessionData({ hash: data.hash, expires: data.expires });
             setStep('otp');
             setError('');
           } else {
@@ -98,7 +100,12 @@ export const AuthModal: React.FC<AuthProps> = ({ isOpen, onClose, onAuthSuccess 
           const response = await fetch('/api/auth/verify-otp', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email: formData.email, otp })
+            body: JSON.stringify({ 
+              email: formData.email, 
+              otp,
+              hash: otpSessionData?.hash,
+              expires: otpSessionData?.expires
+            })
           });
 
           const data = await response.json();
@@ -123,6 +130,7 @@ export const AuthModal: React.FC<AuthProps> = ({ isOpen, onClose, onAuthSuccess 
             // Reset and switch to login
             setStep('details');
             setOtp('');
+            setOtpSessionData(null);
             setIsLogin(true);
             setError('Account verified and created. Please sign in.');
           } else {
