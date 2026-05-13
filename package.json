@@ -1,0 +1,38 @@
+{
+  "name": "exza-earn-|-crypto-investment-platform",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "tsx server.ts",
+    "build": "vite build",
+    "start": "node server.ts",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@google/genai": "^1.38.0",
+    "@react-three/drei": "^10.7.7",
+    "@react-three/fiber": "^9.5.0",
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.1",
+    "express": "^5.2.1",
+    "framer-motion": "^12.28.1",
+    "googleapis": "^171.4.0",
+    "lucide-react": "^0.562.0",
+    "nodemailer": "^8.0.5",
+    "react": "^19.2.3",
+    "react-dom": "^19.2.3",
+    "recharts": "^3.8.1",
+    "three": "^0.182.0"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.6",
+    "@types/node": "^22.14.0",
+    "@types/nodemailer": "^8.0.0",
+    "@vitejs/plugin-react": "^5.0.0",
+    "tsx": "^4.21.0",
+    "typescript": "~5.8.2",
+    "vite": "^6.2.0"
+  }
+}
