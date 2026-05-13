@@ -39,28 +39,39 @@ app.post('/api/auth/send-otp', async (req, res) => {
   const hash = generateHash(email.toLowerCase(), otp, expires);
 
   try {
-    if (!process.env.GMAIL_USER || !process.env.GMAIL_APP_PASSWORD) {
-      console.warn('Gmail credentials not configured. OTP generated but not sent.');
+    if (!process.env.GMAIL_USER || !process.env.GMAIL_APP_PASSWORD || process.env.GMAIL_USER === 'your-email@gmail.com') {
+      console.warn('Gmail credentials not configured properly. OTP generated but not sent.');
+      console.log(`[DEV MODE] Your OTP is: ${otp}`);
       // Still return hash so UI can proceed in dev, but warn the user.
     } else {
-      await transporter.sendMail({
-        from: `"Exza Security" <${process.env.GMAIL_USER}>`,
-        to: email,
-        subject: 'Exza Network - Verification Code',
-        html: `
-          <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #0a0a0a; color: #ffffff;">
-            <h2 style="color: #d4af37;">Exza Network Verification</h2>
-            <p>Your institutional access code is:</p>
-            <h1 style="font-size: 32px; letter-spacing: 4px; color: #d4af37; background: #1a1a1a; padding: 10px; text-align: center; border-radius: 8px;">${otp}</h1>
-            <p style="color: #888888; font-size: 12px;">This code expires in 10 minutes. Do not share this code with anyone.</p>
-          </div>
-        `
-      });
+      try {
+        await transporter.sendMail({
+          from: `"Exza Security" <${process.env.GMAIL_USER}>`,
+          to: email,
+          subject: 'Exza Network - Verification Code',
+          html: `
+            <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #0a0a0a; color: #ffffff;">
+              <h2 style="color: #d4af37;">Exza Network Verification</h2>
+              <p>Your institutional access code is:</p>
+              <h1 style="font-size: 32px; letter-spacing: 4px; color: #d4af37; background: #1a1a1a; padding: 10px; text-align: center; border-radius: 8px;">${otp}</h1>
+              <p style="color: #888888; font-size: 12px;">This code expires in 10 minutes. Do not share this code with anyone.</p>
+            </div>
+          `
+        });
+      } catch (mailError: any) {
+        console.error('SMTP Error:', mailError.message);
+        if (mailError.message.includes('Invalid login')) {
+          return res.status(500).json({ 
+            error: 'Gmail Error 535: Invalid login. You must use a 16-character Google "App Password", NOT your regular email password. Please generate an App Password in your Google Account settings (requires 2-Step Verification) and update the GMAIL_APP_PASSWORD environment variable in Vercel.' 
+          });
+        }
+        throw mailError; // Re-throw to catch block below
+      }
     }
     res.json({ success: true, message: 'OTP sent successfully', hash, expires });
   } catch (error) {
     console.error('Error sending email:', error);
-    res.status(500).json({ error: 'Failed to send verification email' });
+    res.status(500).json({ error: 'Failed to send verification email. Please check server logs.' });
   }
 });
 
