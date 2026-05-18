@@ -1,7 +1,8 @@
 import express from 'express';
-import { createServer as createViteServer } from 'vite';
+import { createServer as createViteServer, ViteDevServer } from 'vite';
 import dotenv from 'dotenv';
 import path from 'path';
+import fs from 'fs';
 import apiApp from './api/index.js'; // Note .js extension is required when resolving in node with type module or tsx
 
 dotenv.config();
@@ -19,11 +20,41 @@ async function startServer() {
       server: { middlewareMode: true },
       appType: 'spa',
     });
+    
+    // Use vite's connect instance as middleware
     app.use(vite.middlewares);
+    
+    // Serve index.html for all non-API routes (SPA fallback)
+    app.use(async (req, res, next) => {
+      const url = req.originalUrl;
+      
+      // Skip API routes
+      if (url.startsWith('/api')) {
+        return next();
+      }
+      
+      try {
+        // Read index.html
+        let template = fs.readFileSync(
+          path.resolve(process.cwd(), 'index.html'),
+          'utf-8'
+        );
+        
+        // Apply Vite HTML transforms
+        template = await vite.transformIndexHtml(url, template);
+        
+        // Send the transformed HTML
+        res.status(200).set({ 'Content-Type': 'text/html' }).end(template);
+      } catch (e: any) {
+        vite.ssrFixStacktrace(e);
+        console.error(e);
+        res.status(500).end(e.message);
+      }
+    });
   } else {
     const distPath = path.join(process.cwd(), 'dist');
     app.use(express.static(distPath));
-    app.get('*', (req, res) => {
+    app.get('/{*path}', (req, res) => {
       res.sendFile(path.join(distPath, 'index.html'));
     });
   }
